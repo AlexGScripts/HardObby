@@ -1,5 +1,6 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.150.1';
 
+// Title screen handling
 const titleScreen = document.getElementById('title-screen');
 const startButton = document.getElementById('start-button');
 const canvas = document.getElementById('game-canvas');
@@ -17,6 +18,9 @@ function initGame() {
   const renderer = new THREE.WebGLRenderer({ canvas });
   renderer.setSize(window.innerWidth, window.innerHeight);
 
+  // Skybox (Blue background)
+  scene.background = new THREE.Color(0x87ceeb);
+
   // Player
   const player = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
@@ -27,28 +31,76 @@ function initGame() {
 
   // Platforms
   const platforms = [];
-  function createPlatform(x, z, color = 0x00ff00) {
+  function createPlatform(x, y, z, color = 0x00ff00) {
     const platform = new THREE.Mesh(
       new THREE.BoxGeometry(5, 1, 5),
       new THREE.MeshBasicMaterial({ color })
     );
-    platform.position.set(x, 0, z);
+    platform.position.set(x, y, z);
     scene.add(platform);
     platforms.push(platform);
   }
 
-  for (let i = 0; i < 10; i++) {
-    createPlatform(i * 6, 0);
+  // Creating multiple levels
+  const platformPositions = [
+    [0, 0, 0], [10, 0, 10], [20, 0, 15], [30, 0, 20], [40, 0, 25],
+    [50, 0, 30], [60, 0, 35], [70, 0, 40], [80, 0, 45], [90, 0, 50]
+  ];
+  platformPositions.forEach(pos => createPlatform(...pos));
+
+  // Checkpoints (Blue)
+  function createCheckpoint(x, y, z) {
+    const checkpoint = new THREE.Mesh(
+      new THREE.BoxGeometry(5, 1, 5),
+      new THREE.MeshBasicMaterial({ color: 0x0000ff })
+    );
+    checkpoint.position.set(x, y, z);
+    scene.add(checkpoint);
+    platforms.push(checkpoint);
   }
-  createPlatform(30, 0, 0xff0000); // Checkpoint
+  createCheckpoint(30, 0, 20); // Example checkpoint
+
+  // Killbricks (Red)
+  function createKillbrick(x, y, z) {
+    const killbrick = new THREE.Mesh(
+      new THREE.BoxGeometry(5, 1, 5),
+      new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    );
+    killbrick.position.set(x, y, z);
+    scene.add(killbrick);
+  }
+  createKillbrick(15, 0, 15); // Example killbrick
+  createKillbrick(25, 0, 25); // Example killbrick
 
   // Lighting
   scene.add(new THREE.AmbientLight(0xffffff));
 
   // Controls
   const keys = {};
+  const touchControls = { left: false, right: false, up: false };  // For mobile
+
+  // Keyboard (PC) controls
   document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
   document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+  // Touch (Mobile) controls
+  const joystick = document.getElementById('joystick');
+  joystick.addEventListener('touchstart', e => {
+    // Implement movement on touch start
+    const touch = e.touches[0];
+    touchControls.left = touch.clientX < window.innerWidth / 2;
+    touchControls.right = touch.clientX > window.innerWidth / 2;
+  });
+  joystick.addEventListener('touchend', () => {
+    touchControls.left = touchControls.right = false;
+  });
+
+  const jumpButton = document.getElementById('jump-button');
+  jumpButton.addEventListener('click', () => {
+    if (isGrounded) {
+      velocityY = 0.4;
+    }
+  });
 
   let velocityY = 0;
   let isGrounded = false;
@@ -61,11 +113,11 @@ function initGame() {
     velocityY -= 0.05;
     player.position.y += velocityY;
 
-    // Movement
-    if (keys['w']) player.position.z -= 0.2;
+    // Movement (PC)
+    if (keys['w'] || touchControls.up) player.position.z -= 0.2;
     if (keys['s']) player.position.z += 0.2;
-    if (keys['a']) player.position.x -= 0.2;
-    if (keys['d']) player.position.x += 0.2;
+    if (keys['a'] || touchControls.left) player.position.x -= 0.2;
+    if (keys['d'] || touchControls.right) player.position.x += 0.2;
 
     // Collision check
     isGrounded = false;
@@ -78,14 +130,14 @@ function initGame() {
         player.position.y = bx.y + 1;
 
         // Checkpoint
-        if (platform.material.color.getHex() === 0xff0000) {
+        if (platform.material.color.getHex() === 0x0000ff) {
           respawnPoint = platform.position.clone();
           respawnPoint.y = 1;
         }
       }
     }
 
-    // Jump
+    // Jump (PC)
     if (keys[' '] && isGrounded) {
       velocityY = 0.4;
     }
@@ -103,4 +155,4 @@ function initGame() {
   }
 
   animate();
-} // end initGame
+}
