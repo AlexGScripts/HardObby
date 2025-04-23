@@ -2,17 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Obby Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Title Screen -->
   <div id="title-screen">
-    <h1>Mega Easy 3D Obby</h1>
+    <h1>3D Obby Game</h1>
     <button id="start-button">Start Game</button>
   </div>
 
+  <!-- Game Canvas -->
   <canvas id="game-canvas"></canvas>
 
-  <script type="module" src="game.js"></script>
+  <!-- Mobile Controls -->
+  <div id="mobile-controls">
+    <div id="joystick">
+      <button id="move-left">←</button>
+      <button id="move-right">→</button>
+      <button id="move-up">↑</button>
+    </div>
+    <button id="jump-button">Jump</button>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>
