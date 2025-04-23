@@ -19,7 +19,7 @@ function initGame() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // Skybox (Blue background)
-  scene.background = new THREE.Color(0x87ceeb);
+  scene.background = new THREE.Color(0x87ceeb); // Blue sky color
 
   // Player
   const player = new THREE.Mesh(
